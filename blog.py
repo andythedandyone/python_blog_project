@@ -16,6 +16,7 @@ jinja_env = jinja2.Environment(loader = jinja2.FileSystemLoader(template_dir),
 
 secret = 'somesecretkeyforpasswordandotherstuff'
 
+
 def render_str(template, **params):
     t = jinja_env.get_template(template)
     return t.render(params)
@@ -158,6 +159,7 @@ class NewPost(BlogHandler):
         else:
             self.redirect("/login")
 
+
     def post(self):
         if not self.user:
             self.redirect('/signup')
@@ -184,11 +186,15 @@ jinja_env.filters['letitpass'] = letitpass
 class EditPost(BlogHandler):
 
     def get(self):
+        if self.user:
+            userid = self.user.name
+            myposts = db.GqlQuery("SELECT * FROM Post WHERE u_id = '%s'" % userid)
 
-        userid = self.user.name
-        myposts = db.GqlQuery("SELECT * FROM Post WHERE u_id = '%s'" % userid)
+            self.render('editpost.html', post=myposts)
 
-        self.render('editpost.html', post = myposts)
+        else:
+            self.redirect("/login")
+
 
     def post(self):
         postid = self.request.get('postid')
@@ -204,16 +210,17 @@ class EditPost(BlogHandler):
             self.redirect('/blog/saveedit/%s' % postid)
 
 
-
-
-
 ######################################################################
 class SaveEdit(BlogHandler):
     def get(self, postid):
-        key = db.Key.from_path('Post', int(postid), parent=blog_key())
-        wrong_post = db.get(key)
 
-        self.render('saveediting.html', show = wrong_post)
+        if self.user:
+            key = db.Key.from_path('Post', int(postid), parent=blog_key())
+            wrong_post = db.get(key)
+
+            self.render('saveediting.html', show=wrong_post)
+        else:
+            self.redirect("/login")
 
 
     def post(self, postid):
@@ -236,12 +243,13 @@ class DeletePost(BlogHandler):
 
     def get(self):
 
-        userid = self.user.name
-        myposts = db.GqlQuery("SELECT * FROM Post WHERE u_id = '%s'" % userid)
+        if self.user:
+            userid = self.user.name
+            myposts = db.GqlQuery("SELECT * FROM Post WHERE u_id = '%s'" % userid)
 
-        self.render('deletepost.html', post = myposts)
-
-
+            self.render('deletepost.html', post=myposts)
+        else:
+            self.redirect("/login")
 
 
     def post(self):
@@ -254,39 +262,6 @@ class DeletePost(BlogHandler):
         message = ('Post ID %s has been deleted' % postid)
 
         self.render('deletedmessage.html', message = message)
-
-
-        #
-        # if not self.show:
-        #     self.write('no show')
-        # else:
-        #     #self.render('saveediting.html', show = self.show)
-        #
-        #
-        #     self.redirect('/blog/saveedit/%s' % postid)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

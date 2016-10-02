@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+
+{% for p in post %}
+    <form method="post">
+        <input type="hidden" name="postid" value="{{ p.key().id() }}" >
+        <div class="post">
+          <div class="post-heading">
+            <div class="post-title">
+              {{p.subject}}
+            </div>
+
+            <div class="post-date" name>
+              {{p.created.strftime("%b %d, %Y")}}
+            </div>
+          </div>
+
+          <div class="post-content">
+            {{p.content | letitpass() | safe}}
+          </div>
+        </div>
+{#        <button> Edit </button>#}
+
+        <input type="submit" name="delete" value="Delete">
+
+    </form>
+    <a href="/blog"><button> Cancel </button> </a>
+
+{% endfor %}
+{% endblock %}
